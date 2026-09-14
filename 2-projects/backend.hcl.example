@@ -1,0 +1,2 @@
+bucket = "replace-with-state-bucket"
+prefix = "landing-zone/2-projects"

@@ -1,0 +1,11 @@
+organization_id = "123456789012"
+
+contacts = {
+  security = {
+    email = "cloud-security@example.com"
+    notification_categories = [
+      "SECURITY",
+      "TECHNICAL",
+    ]
+  }
+}

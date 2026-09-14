@@ -1,0 +1,11 @@
+storage_buckets = {
+  audit_logs = {
+    name       = "replace-with-globally-unique-audit-bucket"
+    project_id = "replace-with-project-id"
+    location   = "ASIA"
+    labels = {
+      data-classification = "internal"
+      managed-by          = "terraform"
+    }
+  }
+}

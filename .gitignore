@@ -1,0 +1,22 @@
+# Terraform working directories and local state
+**/.terraform/*
+*.tfstate
+*.tfstate.*
+*.tfplan
+crash.log
+crash.*.log
+
+# Local configuration may contain account IDs, notification targets, or secrets.
+*.tfvars
+!*.tfvars.example
+backend.hcl
+!backend.hcl.example
+
+# Credentials and sensitive material
+*.pem
+*.key
+service-account*.json
+*.tfbackend
+
+# Keep dependency selections reproducible.
+!.terraform.lock.hcl

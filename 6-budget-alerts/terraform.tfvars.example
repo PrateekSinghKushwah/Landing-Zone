@@ -1,0 +1,10 @@
+billing_account_id = "AAAAAA-BBBBBB-CCCCCC"
+
+budgets = {
+  organization_guardrail = {
+    display_name          = "Organization guardrail"
+    amount                = 500
+    currency_code         = "USD"
+    threshold_percentages = [0.5, 0.8, 1.0]
+  }
+}
