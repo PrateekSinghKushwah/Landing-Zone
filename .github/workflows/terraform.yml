@@ -83,4 +83,4 @@ jobs:
 
       - name: Explain skipped apply
         if: github.event_name != 'push' || github.ref != 'refs/heads/main'
-        run: echo "Apply skipped: only pushes to main may apply Terraform changes."
+        run: 'echo "Apply skipped: only pushes to main may apply Terraform changes."'
