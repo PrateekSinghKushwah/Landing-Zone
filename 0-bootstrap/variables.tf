@@ -19,6 +19,23 @@ variable "terraform_service_account_id" {
   }
 }
 
+variable "github_repository" {
+  description = "GitHub repository allowed to authenticate through Workload Identity Federation, in OWNER/REPOSITORY form."
+  type        = string
+}
+
+variable "github_workload_identity_pool_id" {
+  description = "ID of the Google Cloud Workload Identity Pool for GitHub Actions."
+  type        = string
+  default     = "github-actions"
+}
+
+variable "github_workload_identity_provider_id" {
+  description = "ID of the OIDC provider in the GitHub Actions Workload Identity Pool."
+  type        = string
+  default     = "github"
+}
+
 variable "impersonation_principals" {
   description = "IAM principals allowed to mint tokens for the Terraform service account."
   type        = set(string)
