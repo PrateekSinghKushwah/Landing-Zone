@@ -25,3 +25,26 @@ Authentication is supplied outside the repository, for example through
 Application Default Credentials, workload identity federation, or provider
 impersonation. Use least-privilege service accounts and a separate state prefix
 for every layer and environment.
+
+## GitHub Actions
+
+The `Terraform` workflow plans layers `1` through `6` for pushes and pull
+requests. It applies only when a push targets `main`; pushes to other branches
+skip apply after the plan completes. Bootstrap remains a manual, one-time step.
+
+Configure these repository secrets before enabling the workflow:
+
+- `GCP_WORKLOAD_IDENTITY_PROVIDER`
+- `GCP_SERVICE_ACCOUNT`
+- `TF_STATE_BUCKET`
+- `TFVARS_FOLDERS`
+- `TFVARS_PROJECTS`
+- `TFVARS_RESOURCES`
+- `TFVARS_ORG_POLICIES`
+- `TFVARS_ESSENTIAL_CONTACTS`
+- `TFVARS_BUDGET_ALERTS`
+
+The `TFVARS_*` secrets should contain the complete contents of the matching
+layer's `terraform.tfvars` file. The workload identity service account needs
+permission to read and write the Terraform state bucket and manage the
+resources in each layer.

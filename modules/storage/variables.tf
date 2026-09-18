@@ -28,5 +28,5 @@ variable "versioning_enabled" {
 variable "force_destroy" {
   description = "Allow deletion when the bucket contains objects."
   type        = bool
-  default     = false
+  default     = true
 }

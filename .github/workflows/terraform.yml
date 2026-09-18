@@ -1,0 +1,86 @@
+name: Terraform
+
+on:
+  push:
+    branches:
+      - "**"
+  pull_request:
+
+permissions:
+  contents: read
+  id-token: write
+
+env:
+  TF_IN_AUTOMATION: true
+  TF_INPUT: false
+  TF_STATE_BUCKET: ${{ secrets.TF_STATE_BUCKET }}
+  TFVARS_FOLDERS: ${{ secrets.TFVARS_FOLDERS }}
+  TFVARS_PROJECTS: ${{ secrets.TFVARS_PROJECTS }}
+  TFVARS_RESOURCES: ${{ secrets.TFVARS_RESOURCES }}
+  TFVARS_ORG_POLICIES: ${{ secrets.TFVARS_ORG_POLICIES }}
+  TFVARS_ESSENTIAL_CONTACTS: ${{ secrets.TFVARS_ESSENTIAL_CONTACTS }}
+  TFVARS_BUDGET_ALERTS: ${{ secrets.TFVARS_BUDGET_ALERTS }}
+
+jobs:
+  terraform:
+    name: Terraform ${{ github.event_name == 'pull_request' && 'plan' || 'change' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ secrets.GCP_SERVICE_ACCOUNT }}
+
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v3
+
+      - name: Plan Terraform layers
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          layers=(
+            "1-folders:FOLDERS"
+            "2-projects:PROJECTS"
+            "3-resources:RESOURCES"
+            "4-org-policies:ORG_POLICIES"
+            "5-essential-contacts:ESSENTIAL_CONTACTS"
+            "6-budget-alerts:BUDGET_ALERTS"
+          )
+
+          for layer in "${layers[@]}"; do
+            directory="${layer%%:*}"
+            secret_name="${layer##*:}"
+            tfvars="TFVARS_${secret_name}"
+
+            if [[ -z "${!tfvars:-}" ]]; then
+              echo "Missing GitHub Actions secret: ${tfvars}"
+              exit 1
+            fi
+
+            printf '%s' "${!tfvars}" > "${directory}/terraform.tfvars"
+
+            terraform -chdir="${directory}" init \
+              -backend-config="bucket=${TF_STATE_BUCKET}" \
+              -backend-config="prefix=landing-zone/${directory}"
+            terraform -chdir="${directory}" validate
+            terraform -chdir="${directory}" plan -out=tfplan
+          done
+
+      - name: Apply Terraform layers
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          for directory in 1-folders 2-projects 3-resources 4-org-policies 5-essential-contacts 6-budget-alerts; do
+            terraform -chdir="${directory}" apply -auto-approve tfplan
+          done
+
+      - name: Explain skipped apply
+        if: github.event_name != 'push' || github.ref != 'refs/heads/main'
+        run: echo "Apply skipped: only pushes to main may apply Terraform changes."
